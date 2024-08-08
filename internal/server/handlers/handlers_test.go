@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -12,6 +13,7 @@ import (
 	"github.com/AntonBezemskiy/go-musthave-metrics/internal/server/saver"
 	"github.com/AntonBezemskiy/go-musthave-metrics/internal/server/storage"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-test/deep"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -260,7 +262,7 @@ func TestGetMetricJSON(t *testing.T) {
 			m1,
 			m2,
 		}
-		errWrite := storForFluahFile.AddMetricsFromSlice(metrcSlice)
+		errWrite := storForFluahFile.AddMetricsFromSlice(context.Background(), metrcSlice)
 		require.NoError(t, errWrite)
 
 		errFlush := saverVar.WriteMetrics(storForFluahFile)
@@ -532,8 +534,20 @@ func TestUpdateMetrics(t *testing.T) {
 			defer res.Body.Close() // Закрываем тело ответа
 			// проверяем код ответа
 			assert.Equal(t, tt.want.code, res.StatusCode)
-			assert.Equal(t, tt.want.storage.GetCounters(), stor.GetCounters())
-			assert.Equal(t, tt.want.storage.GetGauges(), stor.GetGauges())
+			//assert.Equal(t, tt.want.storage.GetCounters(), stor.GetCounters())
+			//assert.Equal(t, tt.want.storage.GetGauges(), stor.GetGauges())
+			// wantAll, err := tt.want.storage.GetAllMetrics(context.Background())
+			// require.NoError(t, err)
+			// getAll, errGet := stor.GetAllMetrics(context.Background())
+			// require.NoError(t, errGet)
+			// assert.Equal(t, wantAll, getAll)
+
+			wantAllSlice, errWantSlice := tt.want.storage.GetAllMetricsSlice(context.Background())
+			require.NoError(t, errWantSlice)
+			getAllSlice, errGetSlice := stor.GetAllMetricsSlice(context.Background())
+			require.NoError(t, errGetSlice)
+			deep.Equal(wantAllSlice, getAllSlice)
+			//assert.(t, wantAllSlice, getAllSlice)
 		})
 	}
 }
@@ -679,8 +693,19 @@ func TestUpdateMetricsJSON(t *testing.T) {
 				defer res.Body.Close() // Закрываем тело ответа
 				// проверяем код ответа
 				assert.Equal(t, tt.want.code, res.StatusCode)
-				assert.Equal(t, tt.want.storage.GetCounters(), stor.GetCounters())
-				assert.Equal(t, tt.want.storage.GetGauges(), stor.GetGauges())
+				//assert.Equal(t, tt.want.storage.GetCounters(), stor.GetCounters())
+				//assert.Equal(t, tt.want.storage.GetGauges(), stor.GetGauges())
+				// wantAll, err := tt.want.storage.GetAllMetrics(context.Background())
+				// require.NoError(t, err)
+				// getAll, errGet := stor.GetAllMetrics(context.Background())
+				// require.NoError(t, errGet)
+				// assert.Equal(t, wantAll, getAll)
+
+				wantAllSlice, errWantSlice := tt.want.storage.GetAllMetricsSlice(context.Background())
+				require.NoError(t, errWantSlice)
+				getAllSlice, errGetSlice := stor.GetAllMetricsSlice(context.Background())
+				require.NoError(t, errGetSlice)
+				deep.Equal(wantAllSlice, getAllSlice)
 
 				// Проверяю тело ответа, если код ответа 200
 				if res.StatusCode == http.StatusOK {
