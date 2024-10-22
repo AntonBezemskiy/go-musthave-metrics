@@ -10,11 +10,6 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/AntonBezemskiy/go-musthave-metrics/internal/agent/mocks"
-	"github.com/AntonBezemskiy/go-musthave-metrics/internal/repositories"
-	"github.com/AntonBezemskiy/go-musthave-metrics/internal/server/compress"
-	"github.com/AntonBezemskiy/go-musthave-metrics/internal/server/handlers"
-	"github.com/AntonBezemskiy/go-musthave-metrics/internal/server/storage"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-resty/resty/v2"
 	"github.com/golang/mock/gomock"
@@ -22,6 +17,12 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/AntonBezemskiy/go-musthave-metrics/internal/agent/mocks"
+	"github.com/AntonBezemskiy/go-musthave-metrics/internal/repositories"
+	"github.com/AntonBezemskiy/go-musthave-metrics/internal/server/compress"
+	"github.com/AntonBezemskiy/go-musthave-metrics/internal/server/handlers"
+	"github.com/AntonBezemskiy/go-musthave-metrics/internal/server/storage"
 )
 
 func TestPush(t *testing.T) {
@@ -262,9 +263,9 @@ func TestPushJSON(t *testing.T) {
 			client *resty.Client
 		}
 		tests := []struct {
-			name    string
-			args    args
-			wantErr bool
+			name               string
+			args               args
+			wantErr            bool
 			checkErrorFunction func(error) bool
 		}{
 			{
@@ -274,7 +275,7 @@ func TestPushJSON(t *testing.T) {
 					metric: connectionRefusedMetric,
 					client: resty.New(),
 				},
-				wantErr: true,
+				wantErr:            true,
 				checkErrorFunction: isConnectionRefused,
 			},
 			{
@@ -284,7 +285,7 @@ func TestPushJSON(t *testing.T) {
 					metric: ConnectionExceptionMetric,
 					client: resty.New(),
 				},
-				wantErr: true,
+				wantErr:            true,
 				checkErrorFunction: isDBTransportError,
 			},
 			{
@@ -294,7 +295,7 @@ func TestPushJSON(t *testing.T) {
 					metric: EACCESMetric,
 					client: resty.New(),
 				},
-				wantErr: true,
+				wantErr:            true,
 				checkErrorFunction: isFileLockedError,
 			},
 		}
@@ -465,9 +466,9 @@ func TestPushBatch(t *testing.T) {
 		client       *resty.Client
 	}
 	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
+		name               string
+		args               args
+		wantErr            bool
 		checkErrorFunction func(error) bool
 	}{
 		{
@@ -477,7 +478,7 @@ func TestPushBatch(t *testing.T) {
 				metricsSlice: connectionRefusedSlice,
 				client:       resty.New(),
 			},
-			wantErr: true,
+			wantErr:            true,
 			checkErrorFunction: isConnectionRefused,
 		},
 		{
@@ -487,7 +488,7 @@ func TestPushBatch(t *testing.T) {
 				metricsSlice: ConnectionExceptionSlice,
 				client:       resty.New(),
 			},
-			wantErr: true,
+			wantErr:            true,
 			checkErrorFunction: isDBTransportError,
 		},
 		{
@@ -497,7 +498,7 @@ func TestPushBatch(t *testing.T) {
 				metricsSlice: EACCESSlice,
 				client:       resty.New(),
 			},
-			wantErr: true,
+			wantErr:            true,
 			checkErrorFunction: isFileLockedError,
 		},
 	}
@@ -605,7 +606,7 @@ func Test_isDBTransportError(t *testing.T) {
 		},
 		{
 			name: "ConnectionDoesNotExist string",
-			arg:  fmt.Errorf(error.Error(errConnectionDoesNotExist)),
+			arg:  errConnectionDoesNotExist,
 			want: true,
 		},
 		{
@@ -615,7 +616,7 @@ func Test_isDBTransportError(t *testing.T) {
 		},
 		{
 			name: "ConnectionFailure string",
-			arg:  fmt.Errorf(error.Error(errConnectionFailure)),
+			arg:  errConnectionFailure,
 			want: true,
 		},
 		{
@@ -625,7 +626,7 @@ func Test_isDBTransportError(t *testing.T) {
 		},
 		{
 			name: "SQLClientUnableToEstablishSQLConnection",
-			arg:  fmt.Errorf(error.Error(errSQLClientUnableToEstablishSQLConnection)),
+			arg:  errSQLClientUnableToEstablishSQLConnection,
 			want: true,
 		},
 		{
@@ -635,7 +636,7 @@ func Test_isDBTransportError(t *testing.T) {
 		},
 		{
 			name: "ConnectionException",
-			arg:  fmt.Errorf(error.Error(errConnectionException)),
+			arg:  errConnectionException,
 			want: true,
 		},
 	}
@@ -675,7 +676,7 @@ func Test_isFileLockedError(t *testing.T) {
 		},
 		{
 			name: "EACCES string",
-			arg:  fmt.Errorf(error.Error(errEACCES)),
+			arg:  errEACCES,
 			want: true,
 		},
 		{
@@ -685,7 +686,7 @@ func Test_isFileLockedError(t *testing.T) {
 		},
 		{
 			name: "EROFS string",
-			arg:  fmt.Errorf(error.Error(errEROFS)),
+			arg:  errEROFS,
 			want: true,
 		},
 		{
@@ -695,7 +696,7 @@ func Test_isFileLockedError(t *testing.T) {
 		},
 		{
 			name: "Permission string",
-			arg:  fmt.Errorf(error.Error(errPermission)),
+			arg:  errPermission,
 			want: true,
 		},
 	}
